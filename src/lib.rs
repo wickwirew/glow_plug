@@ -36,11 +36,17 @@ pub fn with_db(attr: TokenStream, item: TokenStream) -> TokenStream {
             let mut conn = <#conn_type>::establish("postgresql://postgres:password@localhost:5432/test_db")
                 .expect("Failed to establish connection.");
 
-            #test_fn_name_inner(conn);
+            let result = std::panic::catch_unwind(|| {
+                #test_fn_name_inner(conn);
+            });
 
             diesel::sql_query("DROP DATABASE test_db;")
                 .execute(&mut main_conn)
                 .expect("Failed to execute query.");
+
+            if let Err(err) = result {
+                std::panic::resume_unwind(err);
+            }
         }
     };
 
