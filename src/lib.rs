@@ -4,7 +4,7 @@ use quote::quote;
 use syn::{parse_macro_input, ItemFn};
 
 #[proc_macro_attribute]
-pub fn with_db(attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn with_db(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as ItemFn);
 
     let test_fn_name = &input.sig.ident;
@@ -13,15 +13,14 @@ pub fn with_db(attr: TokenStream, item: TokenStream) -> TokenStream {
     let block = &input.block;
     let inputs = &input.sig.inputs;
 
+    // The type of connection, e.g. `PgConnection` or `MysqlConnection`
     let conn_type = match inputs.first() {
         Some(syn::FnArg::Typed(syn::PatType { ty, .. })) => ty,
         _ => panic!("Expected at least one input argument"),
     };
 
-    let test_db_name = syn::LitStr::new(
-        &format!("{}_{}", test_fn_name, rand::random::<u32>()),
-        test_fn_name.span(),
-    );
+    // The temporary database name that the test will use
+    let test_db_name = format!("{}_{}", test_fn_name, rand::random::<u32>());
 
     let gen = quote! {
         fn #test_fn_name_inner(#inputs) #block
@@ -41,9 +40,12 @@ pub fn with_db(attr: TokenStream, item: TokenStream) -> TokenStream {
                 .execute(&mut main_conn)
                 .expect("Failed to execute query.");
 
-            let mut conn = <#conn_type>::establish(format!("postgresql://postgres:password@localhost:5432/{}", #test_db_name).as_str())
+            // We cannot just change the `conn` to point to the new database since not
+            // all databases support a `USE database` command. So just connect again
+            let mut conn = <#conn_type>::establish(format!("{}/{}", db_url, #test_db_name).as_str())
                 .expect("Failed to establish connection.");
 
+            // Make sure to catch the panic, so we can drop the database even on failure.
             let result = std::panic::catch_unwind(|| {
                 #test_fn_name_inner(conn);
             });
@@ -52,6 +54,7 @@ pub fn with_db(attr: TokenStream, item: TokenStream) -> TokenStream {
                 .execute(&mut main_conn)
                 .expect("Failed to execute query.");
 
+            // If the test failed, rethrow
             if let Err(err) = result {
                 std::panic::resume_unwind(err);
             }
