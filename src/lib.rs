@@ -28,6 +28,7 @@ pub fn with_db(_attr: TokenStream, item: TokenStream) -> TokenStream {
         #[test]
         fn #test_fn_name() {
             use diesel::{Connection, RunQueryDsl};
+            use diesel_migrations::MigrationHarness;
 
             dotenvy::dotenv().ok();
 
@@ -41,9 +42,15 @@ pub fn with_db(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 .expect("Failed to execute query.");
 
             // We cannot just change the `conn` to point to the new database since not
-            // all databases support a `USE database` command. So just connect again
+            // all databases don't support a `USE database` command. So just connect again
             let mut conn = <#conn_type>::establish(format!("{}/{}", db_url, #test_db_name).as_str())
                 .expect("Failed to establish connection.");
+
+            // Run the migrations, there may be a better way to do this. Right now it currently
+            // requires the migrations to be a const variable in the crate root also the user
+            // needs to manually add the `diesel_migrations` dependency with the correct features.
+            conn.run_pending_migrations(crate::MIGRATIONS)
+                .expect("Failed to run migrations");
 
             // Make sure to catch the panic, so we can drop the database even on failure.
             let result = std::panic::catch_unwind(|| {
