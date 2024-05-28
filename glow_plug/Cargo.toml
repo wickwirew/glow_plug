@@ -1,0 +1,11 @@
+[package]
+name = "glow_plug"
+decription = "Testing macro for diesel to create a clean database for each test"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+glow_plug_macros = { path = "../glow_plug_macros" }
+diesel_migrations = { version = "2.1.0" }

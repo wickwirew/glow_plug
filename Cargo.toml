@@ -1,14 +1,11 @@
 [workspace]
-members = ["glow_plug_macros"]
+members = [
+    "glow_plug",
+    "glow_plug_macros"
+]
 
 [workspace.package]
-name = "glow_plug"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-decription = "Testing macro for diesel to create a clean database for each test"
 repository = "https://github.com/wickwirew/glow_plug"
-
-[dependencies]
-glow_plug_macros = { path = "glow_plug_macros" }
-diesel_migrations = { version = "2.1.0" }
