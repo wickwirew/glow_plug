@@ -26,10 +26,10 @@ pub fn test(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let test_db_name = format!("{}_{}", test_fn_name, rand::random::<u32>());
 
     quote! {
-        fn #test_fn_name_inner(#inputs) #block
+        fn #test_fn_name_inner(#inputs) #return_type #block
 
         #[test]
-        fn #test_fn_name() {
+        fn #test_fn_name() #return_type {
             use diesel::{Connection, RunQueryDsl};
             use diesel_migrations::MigrationHarness;
 
@@ -42,7 +42,7 @@ pub fn test(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
             diesel::sql_query(format!("CREATE DATABASE {};", #test_db_name))
                 .execute(&mut main_conn)
-                .expect("Failed to execute query.");
+                .expect("Failed to create database.");
 
             // We cannot just change the `conn` to point to the new database since not
             // all databases don't support a `USE database` command. So just connect again
@@ -57,16 +57,16 @@ pub fn test(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
             // Make sure to catch the panic, so we can drop the database even on failure.
             let result = std::panic::catch_unwind(|| {
-                #test_fn_name_inner(conn);
+                #test_fn_name_inner(conn)
             });
 
             diesel::sql_query(format!("DROP DATABASE {};", #test_db_name))
                 .execute(&mut main_conn)
-                .expect("Failed to execute query.");
+                .expect("Failed to drop database.");
 
-            // If the test failed, rethrow
-            if let Err(err) = result {
-                std::panic::resume_unwind(err);
+            match result {
+                Ok(val) => val,
+                Err(err) => std::panic::resume_unwind(err),
             }
         }
     }
