@@ -32,13 +32,12 @@ glow_plug = "the-version"
 ```
 2. Setup migrations 
 Internally it just uses `diesel_migrations` which requires the embeded migrations to be a `const` variable. By default the macro just assumes the migrations are available by using `crate::MIGRATIONS`. So in the root of your project you must do.
-```
+
+These are just reexported from `diesel_migrations` so if you already have the embeded migrations setup you can continue to just use those and remove the `#[cfg(test)]`
+```rust
 #[cfg(test)]
 const MIGRATIONS: glow_plug::EmbeddedMigrations = glow_plug::embed_migrations!();
 ```
-Note: These are just reexported from `diesel_migrations` so if you already have the embeded migrations setup you can continue to just use those and remove the `#[cfg(test)]`
-
-Also it would be nice if this was more customizable, so if anyone has any other usecases that require a different setup I'd be happy to accept a PR or an idea on what else to add.
 3. Make sure the `DATABASE_URL` in the `.env` file is set.
 ```
 DATABASE_URL=postgres://...
@@ -47,3 +46,11 @@ DATABASE_URL=postgres://...
 ```
 cargo test
 ```
+
+## Contributing
+PR's are welcome! If people find this useful would love some idea on how to make this more configurable for other setups since the current setup requires some additional things. e.g. `MIGRATIONS` and `.env`
+
+## License
+Copyright © 2024 Wes Wickwire. All rights reserved. Distributed under the MIT License.
+
+[See the LICENSE file.](./LICENSE)
