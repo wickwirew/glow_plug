@@ -12,6 +12,7 @@ pub fn test(_attr: TokenStream, item: TokenStream) -> TokenStream {
         &format!("{}_glow_plug_inner", test_fn_name),
         test_fn_name.span(),
     );
+    let return_type = &input.sig.output;
     let block = &input.block;
     let inputs = &input.sig.inputs;
 
