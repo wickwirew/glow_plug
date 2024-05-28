@@ -1,10 +1,10 @@
 workspace = { members = ["glow_plug_macros"] }
 
 [package]
-name = "connect"
+name = "glow_plug"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 glow_plug_macros = { path = "glow_plug_macros" }
-diesel_migrations = { version = "2.1.0", features = ["postgres"] }
+diesel_migrations = { version = "2.1.0" }
