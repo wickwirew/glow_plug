@@ -1,14 +1,10 @@
+workspace = { members = ["glow_plug_macros"] }
+
 [package]
 name = "connect"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
-proc-macro = true
-
 [dependencies]
-quote = "1.0.36"
-syn = { version = "2.0.66", features = ["full"] }
-dotenvy = "0.15"
-proc-macro2 = { version = "1.0.84", features = ["span-locations"] }
-rand = "0.8.5"
+glow_plug_macros = { path = "glow_plug_macros" }
+diesel_migrations = { version = "2.1.0", features = ["postgres"] }
