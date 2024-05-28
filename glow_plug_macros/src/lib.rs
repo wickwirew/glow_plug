@@ -4,12 +4,14 @@ use quote::quote;
 use syn::{parse_macro_input, ItemFn};
 
 #[proc_macro_attribute]
-pub fn with_db(_attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn test(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as ItemFn);
 
     let test_fn_name = &input.sig.ident;
-    let test_fn_name_inner =
-        syn::Ident::new(&format!("{}_inner", test_fn_name), test_fn_name.span());
+    let test_fn_name_inner = syn::Ident::new(
+        &format!("{}_glow_plug_inner", test_fn_name),
+        test_fn_name.span(),
+    );
     let block = &input.block;
     let inputs = &input.sig.inputs;
 
@@ -22,7 +24,7 @@ pub fn with_db(_attr: TokenStream, item: TokenStream) -> TokenStream {
     // The temporary database name that the test will use
     let test_db_name = format!("{}_{}", test_fn_name, rand::random::<u32>());
 
-    let gen = quote! {
+    quote! {
         fn #test_fn_name_inner(#inputs) #block
 
         #[test]
@@ -66,7 +68,6 @@ pub fn with_db(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 std::panic::resume_unwind(err);
             }
         }
-    };
-
-    gen.into()
+    }
+    .into()
 }
