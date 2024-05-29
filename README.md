@@ -1,12 +1,27 @@
 # Glow Plug
-A simple testing macro for [diesel](https://github.com/diesel-rs/diesel) that will automatically create a new clean database and automatically apply migrations to simplify testing
+A simple testing macro `#[glow_plug::test]` for [diesel](https://github.com/diesel-rs/diesel).
 
-This is heavily inspired by [sqlx's](https://github.com/launchbadge/sqlx) `#[sqlx::test]` macro and attempts to bring its usefulness to diesel.
+A macro that will automatically create a new clean database and apply migrations for each test. Allowing you to actually use a real database for tests without tests interfering with each other or unknowingly depend on each other.
 
 ## Example
+The connection that is handed to the test is always a clean empty database.
 ```rust
 #[glow_plug::test]
-fn test_insert_something(mut conn: PgConnection) -> Result<()> {
+fn test_the_database_is_empty(mut conn: PgConnection) {
+    let results = posts
+        .filter(published.eq(true))
+        .select(Post::as_select())
+        .load(conn)
+        .expect("Error loading posts");
+
+    assert_eq!(results.len(), 0);
+}
+```
+
+Also can handle test that return results.
+```rust
+#[glow_plug::test]
+fn test_insert_user(mut conn: PgConnection) -> Result<()> {
     let user = NewUser {
         id: "12345",
         ...
@@ -25,30 +40,34 @@ fn test_insert_something(mut conn: PgConnection) -> Result<()> {
 ```
 
 ## Installation
-1. Add `glow_plug` as a dev dependency.
+#### 1. Add `glow_plug` as a dev dependency.
 ```
 [dev-dependencies]
 glow_plug = "the-version"
 ```
-2. Setup migrations 
-Internally it just uses `diesel_migrations` which requires the embeded migrations to be a `const` variable. By default the macro just assumes the migrations are available by using `crate::MIGRATIONS`. So in the root of your project you must do.
+#### 2. Setup migrations 
+
+Internally it just uses `diesel_migrations` which requires the embeded migrations to be a `const` variable. By default the macro just assumes the migrations are available by using `crate::MIGRATIONS`. So in the root of your project you must declare the `MIGRATIONS`.
 
 These are just reexported from `diesel_migrations` so if you already have the embeded migrations setup you can continue to just use those and remove the `#[cfg(test)]`
 ```rust
 #[cfg(test)]
 const MIGRATIONS: glow_plug::EmbeddedMigrations = glow_plug::embed_migrations!();
 ```
-3. Make sure the `DATABASE_URL` in the `.env` file is set.
+#### 3. Make sure the `DATABASE_URL` in the `.env` file is set.
 ```
 DATABASE_URL=postgres://...
 ```
-4. Run the tests!
+#### 4. Run the tests!
 ```
 cargo test
 ```
 
 ## Contributing
-PR's are welcome! If people find this useful would love some idea on how to make this more configurable for other setups since the current setup requires some additional things. e.g. `MIGRATIONS` and `.env`
+PR's are welcome! If people find this useful would love some ideas on how to make this more configurable for other setups since the current setup requires some additional things and the macro just assumes where the `MIGRATIONS` are and that you use `.env`.
+
+## Credits
+This is heavily inspired by [sqlx's](https://github.com/launchbadge/sqlx) `#[sqlx::test]` macro and attempts to bring its usefulness to diesel. So credit to them for the idea!
 
 ## License
 Copyright © 2024 Wes Wickwire. All rights reserved. Distributed under the MIT License.
