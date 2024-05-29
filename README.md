@@ -1,10 +1,12 @@
 # Glow Plug
 A simple testing macro `#[glow_plug::test]` for [diesel](https://github.com/diesel-rs/diesel).
 
-A macro that will automatically create a new clean database and apply migrations for each test. Allowing you to actually use a real database for tests without tests interfering with each other or unknowingly depend on each other.
+Glow Plug is a Rust testing library designed to simplify database testing with Diesel. It provides a macro that automatically sets up a new, clean database and applies migrations for each test, ensuring test isolation and reliability. With Glow Plug, you can confidently write tests that interact with a real database without worrying about tests interfering with each other or having hidden dependencies.
 
 ## Example
-The connection that is handed to the test is always a clean empty database.
+The connection provided to the test is always a clean, empty database.
+
+#### Example 1.
 ```rust
 #[glow_plug::test]
 fn test_the_database_is_empty(mut conn: PgConnection) {
@@ -18,6 +20,7 @@ fn test_the_database_is_empty(mut conn: PgConnection) {
 }
 ```
 
+#### Example 2.
 Also can handle test that return results.
 ```rust
 #[glow_plug::test]
@@ -41,6 +44,7 @@ fn test_insert_user(mut conn: PgConnection) -> Result<()> {
 
 ## Installation
 #### 1. Add `glow_plug` as a dev dependency.
+Find the latest version on [crates.io](https://crates.io).
 ```
 [dev-dependencies]
 glow_plug = "the-version"
