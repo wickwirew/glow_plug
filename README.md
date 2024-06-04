@@ -42,6 +42,16 @@ fn test_insert_user(mut conn: PgConnection) -> Result<()> {
 }
 ```
 
+#### Async Example
+Enabling the `tokio` feature will allow you to run `async` tests.
+```rust
+#[glow_plug::test]
+async fn test_insert_user(mut conn: PgConnection) -> Result<()> {
+    let result = something_async().await?;
+    assert(result);
+}
+```
+
 ## Installation
 #### 1. Add `glow_plug` as a dev dependency.
 Find the latest version on [crates.io](https://crates.io).

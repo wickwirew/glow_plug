@@ -53,14 +53,14 @@ pub fn test(_attr: TokenStream, item: TokenStream) -> TokenStream {
     };
 
     quote! {
-        #async_modifier fn #test_fn_name_inner(#inputs) #return_type #block
-
         #test_macro
         #async_modifier fn #test_fn_name() #return_type {
-            use diesel::{Connection, RunQueryDsl};
-            use diesel_migrations::MigrationHarness;
+            #async_modifier fn #test_fn_name_inner(#inputs) #return_type #block
 
-            dotenvy::dotenv().ok();
+            use glow_plug::{Connection, RunQueryDsl};
+            use glow_plug::MigrationHarness;
+
+            glow_plug::dotenvy::dotenv().ok();
 
             let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
