@@ -25,11 +25,38 @@ pub fn test(_attr: TokenStream, item: TokenStream) -> TokenStream {
     // The temporary database name that the test will use
     let test_db_name = format!("{}_{}", test_fn_name, rand::random::<u32>());
 
-    quote! {
-        fn #test_fn_name_inner(#inputs) #return_type #block
+    let is_async = input.sig.asyncness.is_some();
 
-        #[test]
-        fn #test_fn_name() #return_type {
+    let async_modifier = if is_async {
+        quote! { async }
+    } else {
+        quote! {}
+    };
+
+    let test_macro = if is_async {
+        quote! { #[glow_plug::tokio::test] }
+    } else {
+        quote! { #[test] }
+    };
+
+    let run_test = if is_async {
+        quote! {
+            use glow_plug::FutureExt;
+            let result = #test_fn_name_inner(conn).catch_unwind().await;
+        }
+    } else {
+        quote! {
+            let result = std::panic::catch_unwind(|| {
+                #test_fn_name_inner(conn)
+            });
+        }
+    };
+
+    quote! {
+        #async_modifier fn #test_fn_name_inner(#inputs) #return_type #block
+
+        #test_macro
+        #async_modifier fn #test_fn_name() #return_type {
             use diesel::{Connection, RunQueryDsl};
             use diesel_migrations::MigrationHarness;
 
@@ -56,9 +83,7 @@ pub fn test(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 .expect("Failed to run migrations");
 
             // Make sure to catch the panic, so we can drop the database even on failure.
-            let result = std::panic::catch_unwind(|| {
-                #test_fn_name_inner(conn)
-            });
+            #run_test
 
             diesel::sql_query(format!("DROP DATABASE {};", #test_db_name))
                 .execute(&mut main_conn)
