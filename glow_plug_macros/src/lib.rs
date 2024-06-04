@@ -3,6 +3,11 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, punctuated::Punctuated, ItemFn, Signature, Type};
 
+/// A testing macro similar to the standard `[#test]` but allows for
+/// function to take a connection to a database as a parameter.
+///
+/// A clean new database will be automatically created for the test
+/// and destroyed after the test has run.
 #[proc_macro_attribute]
 pub fn test(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let func = parse_macro_input!(item as ItemFn);
