@@ -1,6 +1,6 @@
 [package]
 name = "glow_plug"
-decription = "Testing macro for diesel to create a clean database for each test"
+description.workspace = true
 version.workspace = true
 edition.workspace = true
 license.workspace = true

@@ -8,4 +8,5 @@ members = [
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
+description = "Testing macro for diesel to create a clean database for each test"
 repository = "https://github.com/wickwirew/glow_plug"
