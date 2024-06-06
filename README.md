@@ -54,10 +54,9 @@ async fn test_insert_user(mut conn: PgConnection) -> Result<()> {
 
 ## Installation
 #### 1. Add `glow_plug` as a dev dependency.
-Find the latest version on [crates.io](https://crates.io).
 ```
 [dev-dependencies]
-glow_plug = "the-version"
+glow_plug = { version = "the-version", features = ["tokio"] }
 ```
 #### 2. Setup migrations 
 
