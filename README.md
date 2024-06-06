@@ -60,10 +60,12 @@ glow_plug = { version = "the-version", features = ["tokio"] }
 ```
 #### 2. Setup migrations 
 
-Internally it just uses `diesel_migrations` which requires the embeded migrations to be a `const` variable. By default the macro just assumes the migrations are available by using `crate::MIGRATIONS`. So in the root of your project you must declare the `MIGRATIONS`.
+The macro by default just assumes the migrations are available by `crate::MIGRATIONS`. So in the root of your project you must declare the `MIGRATIONS`.
 
 These are just reexported from `diesel_migrations` so if you already have the embeded migrations setup you can continue to just use those and remove the `#[cfg(test)]`
 ```rust
+// main.rs or lib.rs
+
 #[cfg(test)]
 const MIGRATIONS: glow_plug::EmbeddedMigrations = glow_plug::embed_migrations!();
 ```
