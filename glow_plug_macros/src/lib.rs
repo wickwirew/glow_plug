@@ -21,7 +21,9 @@ pub fn test(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let run_test = if func.sig.asyncness.is_some() {
         quote! {
             use glow_plug::FutureExt;
-            let result = #inner_ident(conn).catch_unwind().await;
+            let result = async move {
+                std::panic::AssertUnwindSafe(#inner_ident(conn)).catch_unwind().await
+            }.await;
         }
     } else {
         quote! {
